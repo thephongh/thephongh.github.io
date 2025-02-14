@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Game Chia Động Từ "Avoir"</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f7f7f7;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+    .droppable {
+      width: 200px;
+      height: 50px;
+      margin: 10px;
+      padding: 10px;
+      background-color: #fff;
+      border: 2px dashed #aaa;
+      border-radius: 5px;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+    }
+    .droppable.hovered {
+      border-color: #333;
+      background-color: #e6ffe6;
+    }
+    .draggables {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .draggable {
+      width: 100px;
+      padding: 10px;
+      margin: 10px;
+      background-color: #ffdd99;
+      border: 1px solid #cc9900;
+      border-radius: 5px;
+      text-align: center;
+      cursor: move;
+    }
+    #result {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #006600;
+    }
+    #checkBtn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chia Động Từ "Avoir" (Thì Hiện Tại)</h1>
+  <p style="text-align: center;">Kéo đáp án bên dưới và thả vào ô tương ứng với đại từ.</p>
+  
+  <!-- Các ô đại từ (droppable) -->
+  <div class="container">
+    <!-- Sử dụng data-answer để lưu đáp án đúng -->
+    <div class="droppable" id="drop1" data-answer="ai">Je</div>
+    <div class="droppable" id="drop2" data-answer="as">Tu</div>
+    <div class="droppable" id="drop3" data-answer="a">Il/Elle/On</div>
+    <div class="droppable" id="drop4" data-answer="avons">Nous</div>
+    <div class="droppable" id="drop5" data-answer="avez">Vous</div>
+    <div class="droppable" id="drop6" data-answer="ont">Ils/Elles</div>
+  </div>
+  
+  <!-- Các đáp án có thể kéo (draggable) -->
+  <div class="draggables">
+    <div class="draggable" draggable="true" id="ans1">ai</div>
+    <div class="draggable" draggable="true" id="ans2">as</div>
+    <div class="draggable" draggable="true" id="ans3">a</div>
+    <div class="draggable" draggable="true" id="ans4">avons</div>
+    <div class="draggable" draggable="true" id="ans5">avez</div>
+    <div class="draggable" draggable="true" id="ans6">ont</div>
+  </div>
+  
+  <!-- Nút kiểm tra kết quả -->
+  <button id="checkBtn">Kiểm tra</button>
+  <div id="result"></div>
+  
+  <script>
+    // Các phần tử có thể kéo
+    const draggables = document.querySelectorAll('.draggable');
+    draggables.forEach(elem => {
+      elem.addEventListener('dragstart', dragStart);
+    });
+    
+    function dragStart(e) {
+      e.dataTransfer.setData('text/plain', e.target.id);
+      // Lưu lại id nguồn để nếu cần có thể xử lý hoàn trả lại
+      e.dataTransfer.effectAllowed = "move";
+    }
+    
+    // Các ô thả (droppable)
+    const droppables = document.querySelectorAll('.droppable');
+    droppables.forEach(drop => {
+      drop.addEventListener('dragover', dragOver);
+      drop.addEventListener('dragleave', dragLeave);
+      drop.addEventListener('drop', dropItem);
+    });
+    
+    function dragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      this.classList.add('hovered');
+    }
+    
+    function dragLeave(e) {
+      this.classList.remove('hovered');
+    }
+    
+    function dropItem(e) {
+      e.preventDefault();
+      this.classList.remove('hovered');
+      // Lấy id của phần tử được kéo
+      const draggedId = e.dataTransfer.getData('text/plain');
+      const draggedElem = document.getElementById(draggedId);
+      
+      // Nếu ô đã có đáp án, trả đáp án cũ về danh sách các đáp án
+      if (this.firstElementChild) {
+        // Thêm đáp án cũ vào danh sách draggables
+        document.querySelector('.draggables').appendChild(this.firstElementChild);
+      }
+      
+      // Thêm phần tử được kéo vào ô thả
+      this.appendChild(draggedElem);
+    }
+    
+    // Nút kiểm tra đáp án
+    document.getElementById('checkBtn').addEventListener('click', function() {
+      let score = 0;
+      droppables.forEach(drop => {
+        const expected = drop.getAttribute('data-answer').trim().toLowerCase();
+        // Nếu đã có đáp án trong ô thả
+        if (drop.firstElementChild) {
+          const userAnswer = drop.firstElementChild.textContent.trim().toLowerCase();
+          if (userAnswer === expected) {
+            score++;
+            drop.style.backgroundColor = "#ccffcc"; // Màu xanh nhạt nếu đúng
+          } else {
+            drop.style.backgroundColor = "#ffcccc"; // Màu đỏ nhạt nếu sai
+          }
+        } else {
+          drop.style.backgroundColor = "#ffffcc"; // Màu vàng nhạt nếu chưa có đáp án
+        }
+      });
+      document.getElementById('result').textContent = `Bạn đạt được ${score} điểm trên tổng số ${droppables.length} câu hỏi.`;
+    });
+  </script>
+</body>
+</html>
